@@ -4,7 +4,12 @@
 ;;; playing the gun-cocking sound on dangerous symbol input.
 
 (defconst shoot-in-the-foot-sounds
-  (file-name-as-directory (expand-file-name "sounds"))
+  (file-name-as-directory
+   (expand-file-name
+    "sounds"
+    (if load-file-name
+        (file-name-directory load-file-name)
+      default-directory)))
   "Path to the directory with sounds.")
 
 (defun shoot-in-the-foot-warn ()
