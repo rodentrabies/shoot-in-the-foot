@@ -12,9 +12,22 @@
       default-directory)))
   "Path to the directory with sounds.")
 
+(defmacro shoot-in-the-foot-play (file)
+  "Play sound file.
+If the platform is known, run its built-in shell tool, otherwise
+use Emacs' own `play-sound-file' function."
+  `(concat
+    ,(cond
+      ((string-equal system-type "gnu/linux")
+       `(call-process "aplay" nil 0 nil ,file))
+      ((string-equal system-type "darwin")
+       `(call-process "afplay" nil 0 nil ,file))
+      (t
+       `(make-thread (lambda () (play-sound-file ,file)))))))
+
 (defun shoot-in-the-foot-warn ()
-  "Play the sound from sounds directory."
-  (play-sound-file (concat shoot-in-the-foot-sounds "reload_00.wav")))
+  "Produce shotgun reloading sound."
+  (shoot-in-the-foot-play (concat shoot-in-the-foot-sounds "reload_00.wav")))
 
 (defcustom shoot-in-the-foot-dangerous-symbols (list 'defmacro 'macrolet)
   "List of symbols that trigger warning."
@@ -24,7 +37,7 @@
   "Dispatch warning on symbol at point.
 If symbol at point is in dangerous list, call warning function."
   (when (member (symbol-at-point) shoot-in-the-foot-dangerous-symbols)
-    (make-thread #'shoot-in-the-foot-warn)))
+    (shoot-in-the-foot-warn)))
 
 (defun shoot-in-the-foot-after-hook ()
   "After-hook to add/remove dispatch function.
